@@ -1,8 +1,12 @@
+<html>
 <h1> Edit Restaurant </h1>
-<form action = "#" method = 'post'>
+<!--Link to edit for this particular restaurant-->
+<form action="{{ url_for('editRestaurant', restaurant_id=restaurant.id)}}" method='post>'
 <p> Name: </p>
+<!--The text 'Name', followed by the suggestion of the restaurant's current name, and submit/cancel options-->
 <input type='text' seize='30' name='name' placeholder='{{restaurant.name}}'>
 <input type='submit' value='Edit'>
 <a href='#'> Cancel </a>
 </body>
 </form>
+</html>
