@@ -11,9 +11,10 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-# use JSON to transmit data on restaurants and menu items
+# use JSON to transmit data on restaurants, menus, and menu items
 @app.route('/restaurant/<int:restaurant_id>/menu/JSON')
 def restaurantMenuJSON(restaurant_id):
+	# get all the items for a specific restaurant
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(
         restaurant_id=restaurant_id).all()
@@ -68,7 +69,7 @@ def editRestaurant(restaurant_id):
             'editRestaurant.html', restaurant=editedRestaurant)
 
 
-# Delete a restaurant
+# Delete a restaurant, or show all restaurants if we have just deleted a restaurant
 @app.route('/restaurant/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
 def deleteRestaurant(restaurant_id):
     restaurantToDelete = session.query(
@@ -87,34 +88,34 @@ def deleteRestaurant(restaurant_id):
 @app.route('/restaurant/<int:restaurant_id>/')
 @app.route('/restaurant/<int:restaurant_id>/menu/')
 def showMenu(restaurant_id):
+	# using restaurant_id, print correct restaurant, and all its menu items
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = session.query(MenuItem).filter_by(
         restaurant_id=restaurant_id).all()
     return render_template('menu.html', items=items, restaurant=restaurant)
 
 
-# Create a new menu item
+# Create a new menu item: show newMenuItem template, or showMenu if item has just been created 
 @app.route(
     '/restaurant/<int:restaurant_id>/menu/new/', methods=['GET', 'POST'])
 def newMenuItem(restaurant_id):
     if request.method == 'POST':
+    	# get parameters from form 
         newItem = MenuItem(name=request.form['name'], description=request.form[
                            'description'], price=request.form['price'], course=request.form['course'], restaurant_id=restaurant_id)
         session.add(newItem)
         session.commit()
-
         return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
         return render_template('newmenuitem.html', restaurant_id=restaurant_id)
 
-    return render_template('newMenuItem.html', restaurant=restaurant)
 
-
-# Edit a menu item
+# Edit a menu item--render editmenuitem page, unless it was just edited, in which case show that restaurant's menu
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit',
            methods=['GET', 'POST'])
 def editMenuItem(restaurant_id, menu_id):
     editedItem = session.query(MenuItem).filter_by(id=menu_id).one()
+    # depending on what form field was edited, adjust the editedIte parameter
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -128,12 +129,11 @@ def editMenuItem(restaurant_id, menu_id):
         session.commit()
         return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
-
         return render_template(
             'editmenuitem.html', restaurant_id=restaurant_id, menu_id=menu_id, item=editedItem)
 
 
-# Delete a menu item
+# Delete an item -- render delete item page, unless item has just been deleted
 @app.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete',
            methods=['GET', 'POST'])
 def deleteMenuItem(restaurant_id, menu_id):
