@@ -1,1 +1,1 @@
-# unit7-final-project
+# A mockup of a restaurant page with database, OAuth, and login.
